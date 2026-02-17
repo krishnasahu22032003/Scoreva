@@ -1,4 +1,5 @@
 import express from "express";
+import startServer from "./utils/startserver.js";
 
 const app = express();
 
@@ -9,6 +10,4 @@ app.get("/",(req,res)=>{
 })
 
 
-app.listen(3000 , ()=>{
-    console.log("App running on port 3000")
-})
+startServer(app);
