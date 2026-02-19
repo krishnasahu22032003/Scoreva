@@ -6,6 +6,10 @@ export const MATCH_STATUS = {
   ENDED: "ENDED",
 } as const;
 
+
+export type MatchStatus =
+  (typeof MATCH_STATUS)[keyof typeof MATCH_STATUS];
+  
 export const listMatchesQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional(),
 });
