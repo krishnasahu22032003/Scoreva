@@ -1,41 +1,45 @@
 import express from "express";
+import { WebSocketServer } from "ws";
 import startServer from "./utils/startserver.js";
-import { WebSocketServer , WebSocket } from "ws";
 import type { IncomingMessage } from "http";
 
-
-//0:connecting , 1:open(send only if the connection is opened) , 2:closing , 3:closed
-
-const wss = new WebSocketServer({ port:8080 });
 const app = express();
-
 app.use(express.json());
 
-wss.on("connection", (socket:WebSocket , request:IncomingMessage)=>{
 
-const ip = request.socket.remoteAddress;
+const wss = new WebSocketServer({port:8080});
 
-socket.on("message",( rawData: Buffer)=>{
-    console.log({rawdata:rawData});
-    const message = rawData.toString();
-    console.log(message)
-    wss.clients.forEach((client)=>{
-       
-        if(client !== socket &&  client.readyState === WebSocket.OPEN ){
-            client.send(`Server Broadcast ${message}`)
-        }
-    })
-});
 
-socket.on("error",( error )=>{
+wss.on("connection",(socket , request)=>{
 
-    console.error(`Server Error : ${error.message} : ${ip}`);
-})
+console.log("connected to ws server");
 
-socket.on("close" , ()=>{
-    console.log("Client disconnected")
-})
+const ip = request.socket.remoteAddress ; 
+
+socket.on("message",(message:Buffer)=>{
+
+const data  = message.toString();
+console.log(data)
+
+wss.clients.forEach((client)=>{
+
+if(client !== socket && client.readyState === WebSocket.OPEN){
+
+    client.send(data)
+}
 
 })
-console.log("websocket server is running")
-startServer(app);
+
+})
+
+socket.on("error",(error)=>{
+
+    console.error(`Error Came ${error}, ip:${ip}`)
+
+
+})
+socket.on("close",()=>{
+    console.log("disconnected")
+})
+})
+startServer(app)
