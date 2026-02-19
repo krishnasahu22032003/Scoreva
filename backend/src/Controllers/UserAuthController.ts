@@ -149,3 +149,25 @@ export const UserSignIn = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: "Server error" });
     }
 }
+
+export const UserSignOut = (req: Request, res: Response) => {
+
+    try {
+        res.clearCookie("auth_token", {
+            httpOnly: true,
+            secure: ENV.NODE_ENV === "production",
+            sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Logout successful"
+        });
+    } catch (error) {
+        console.log((error as Error).message, "Error while logout")
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error "
+        });
+    }
+} 
