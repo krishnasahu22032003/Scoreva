@@ -23,7 +23,7 @@ createdAt DateTime @default(now())
 
 }
 
-model Matches {
+model Match {
 
 id              Int         @id                  @default(autoincrement())
 sport           String    
@@ -35,9 +35,29 @@ endTime         DateTime
 firstTeamScore  Int         @default(0)
 secondTeamScore Int         @default(0)
 createdAt        DateTime    @default(now())
-
+commentaries     Commentary[]
 }
 
+model Commentary{
+
+id            Int          @id    @default(autoincrement())
+matchId       Int
+match         Match        @relation(fields: [matchId], references: [id] ,onDelete: Cascade)
+minute        Int?
+sequence      Int?
+period        String?
+eventType     String?
+actor         String?
+team          String?
+message       String
+metadata      Json?
+tags          String[]
+createdAt     DateTime   @default(now())
+
+  @@index([matchId])
+  @@index([matchId, sequence])
+
+}
 
 enum MatchStatus{
 
