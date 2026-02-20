@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { getMatchStatus } from "../utils/match-status.js";
 
 
-export const Match = async (req:Request,res:Response)=>{
+export const CreateMatch = async (req:Request,res:Response)=>{
 
 const Parsed = createMatchSchema.safeParse(req.body);
 
