@@ -12,6 +12,7 @@ export type MatchStatus =
   
 export const listMatchesQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional(),
+  page: z.coerce.number().min(0).optional(),
 });
 
 export const matchIdParamSchema = z.object({

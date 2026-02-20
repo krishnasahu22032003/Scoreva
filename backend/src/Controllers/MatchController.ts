@@ -40,44 +40,45 @@ res.status(201).json({data:event});
     return res.status(500).json({
         success:false,
         message:"Internal Server Error",
-        details:JSON.stringify(error)
+        details:JSON.stringify(Parsed.error)
     });
 
 }
 
 }
+export const GetMatchData = async (req: Request, res: Response) => {
 
-export const GetMatchData = async (req:Request,res:Response)=>{
+  const parsed = listMatchesQuerySchema.safeParse(req.query);
 
-const parsed = listMatchesQuerySchema.safeParse(req.body);
-
-if(!parsed.success){
+  if (!parsed.success) {
     return res.status(400).json({
-        success:false,
-        message:"Invalid  Query",
-        details:JSON.stringify(parsed.error)
-    })
-}
-
-const limit = Math.min(parsed.data.limit ?? 50 ,MAX_LIMIT);
-
-try{
-
-const data = await prisma.match.findMany({
-    orderBy:{
-        createdAt:"desc"
-    },
-    take:limit
-})
-
-res.json({data});
-}catch(error){
-     console.log((error as Error).message);
-    return res.status(500).json({
-        success:false,
-        message:"Failed to list matches ",
-        details:JSON.stringify(error)
+      success: false,
+      message: "Invalid Query",
+      details: parsed.error.flatten(),
     });
-}
+  }
 
-}
+  const limit = Math.min(parsed.data.limit ?? 50, MAX_LIMIT);
+  const page = parsed.data.page ?? 0;
+
+  try {
+
+    const data = await prisma.match.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: page * limit,
+    });
+
+    return res.json({ data });
+
+  } catch (error) {
+
+    console.log((error as Error).message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to list matches",
+      details: (error as Error).message,
+    });
+  }
+};
