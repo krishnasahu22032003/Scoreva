@@ -1,8 +1,10 @@
 import { type Request, type Response } from "express";
-import { createMatchSchema } from "../validation/matches.js";
+import { createMatchSchema, listMatchesQuerySchema } from "../validation/matches.js";
 import { prisma } from "../lib/prisma.js";
 import { getMatchStatus } from "../utils/match-status.js";
 
+
+const MAX_LIMIT = 100 ;
 
 export const CreateMatch = async (req:Request,res:Response)=>{
 
@@ -41,6 +43,41 @@ res.status(201).json({data:event});
         details:JSON.stringify(error)
     });
 
+}
+
+}
+
+export const GetMatchData = async (req:Request,res:Response)=>{
+
+const parsed = listMatchesQuerySchema.safeParse(req.body);
+
+if(!parsed.success){
+    return res.status(400).json({
+        success:false,
+        message:"Invalid  Query",
+        details:JSON.stringify(parsed.error)
+    })
+}
+
+const limit = Math.min(parsed.data.limit ?? 50 ,MAX_LIMIT);
+
+try{
+
+const data = await prisma.match.findMany({
+    orderBy:{
+        createdAt:"desc"
+    },
+    take:limit
+})
+
+res.json({data});
+}catch(error){
+     console.log((error as Error).message);
+    return res.status(500).json({
+        success:false,
+        message:"Failed to list matches ",
+        details:JSON.stringify(error)
+    });
 }
 
 }
