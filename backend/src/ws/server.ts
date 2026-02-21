@@ -2,7 +2,7 @@ import WebSocket, { WebSocketServer } from "ws";
 import { Server } from "http";
 import type { Match } from "../../generated/prisma/index.js";
 
-function sendJson(socket: WebSocket, payload: unknown) {
+export function sendJson(socket: WebSocket, payload: unknown) {
 
     if (socket.readyState !== WebSocket.OPEN) return;
 
@@ -10,7 +10,7 @@ function sendJson(socket: WebSocket, payload: unknown) {
 
 }
 
-function broadcast(wss: WebSocketServer, payload: unknown) {
+export function broadcast(wss: WebSocketServer, payload: unknown) {
 
     for (const client of wss.clients) {
         if (client.readyState !== WebSocket.OPEN) return;
@@ -19,7 +19,7 @@ function broadcast(wss: WebSocketServer, payload: unknown) {
 
 }
 
-function attachWebSocketServer(server: Server) {
+export function attachWebSocketServer(server: Server) {
     const wss = new WebSocketServer({ server, path: '/ws' , maxPayload:1024 * 1024  });
 
     wss.on("connection",(socket:WebSocket)=>{
