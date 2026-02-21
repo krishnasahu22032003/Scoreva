@@ -11,7 +11,9 @@ const startServer = (app: Express) => {
   const { broadcastMatchCreated } = attachWebSocketServer(server);
   app.locals.broadcastMatchCreated = broadcastMatchCreated;
   const serverMain = server.listen(port, host, () => {
-    console.log(`App running on port ${port}`);
+    const baseURL = host === '0.0.0.0' ? `http://localhost:${port}` : `http://${host}:${port}`;
+    console.log(`App running on ${baseURL}`);
+    console.log(`Websocket server is running on ${baseURL.replace("http","ws")}/ws`);
   });
 
   serverMain.on("error", (err: NodeJS.ErrnoException) => {

@@ -32,7 +32,9 @@ const event = await prisma.match.create({
    
 
 })
-
+if(res.app.locals.broadcastMatchCreated){
+  res.app.locals.broadcastMatchCreated(event);
+}
 res.status(201).json({data:event});
 
 }catch(error){
