@@ -4,6 +4,6 @@ import { Commentary, GetCommentary } from "../Controllers/CommentaryController.j
 const CommentaryRouter = express.Router();
 
 CommentaryRouter.get("/:id",GetCommentary)
-CommentaryRouter.post("/",Commentary)
+CommentaryRouter.post("/:id",Commentary)
 
 export default CommentaryRouter;

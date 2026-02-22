@@ -10,6 +10,16 @@ export interface ExtendedWebSocket extends WebSocket {
 
 }
 
+const matchSubscribers = new Map();
+
+function subscribe(matchId:Number, socket:WebSocket) {
+    if(!matchSubscribers.has(matchId)) {
+        matchSubscribers.set(matchId, new Set());
+    }
+
+    matchSubscribers.get(matchId).add(socket);
+}
+
 
 export function sendJson(socket: WebSocket, payload: unknown) {
 

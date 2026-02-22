@@ -7,7 +7,7 @@ import CommentaryRouter from "./Routes/CommentaryRoute.js";
 
 const app = express();
 app.use(express.json());
-app.use(securityMiddleware)
+// app.use(securityMiddleware)
 
 app.use("/api/user/",UserRouter);
 app.use("/api/match/",MatchRouter);
