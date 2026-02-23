@@ -6,7 +6,8 @@ import type { ArcjetNodeRequest } from "@arcjet/node";
 
 export interface ExtendedWebSocket extends WebSocket {
 
-    isAlive: Boolean
+    isAlive: Boolean,
+    subscriptions:Set<string>;
 
 }
 
@@ -20,7 +21,7 @@ function subscribe(matchId:Number, socket:WebSocket) {
     matchSubscribers.get(matchId).add(socket);
 }
 
-function unsubscribe(matchId:Number, socket:WebSocket) {
+function unsubscribe(matchId:number, socket:WebSocket) {
     const subscribers = matchSubscribers.get(matchId);
 
     if(!subscribers) return;
@@ -29,6 +30,12 @@ function unsubscribe(matchId:Number, socket:WebSocket) {
 
     if(subscribers.size === 0) {
         matchSubscribers.delete(matchId);
+    }
+}
+
+function cleanupSubscriptions(socket:ExtendedWebSocket) {
+    for(const matchId of socket.subscriptions) {
+        unsubscribe(matchId, socket);
     }
 }
 
