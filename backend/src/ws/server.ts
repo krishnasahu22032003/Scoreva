@@ -20,6 +20,18 @@ function subscribe(matchId:Number, socket:WebSocket) {
     matchSubscribers.get(matchId).add(socket);
 }
 
+function unsubscribe(matchId:Number, socket:WebSocket) {
+    const subscribers = matchSubscribers.get(matchId);
+
+    if(!subscribers) return;
+
+    subscribers.delete(socket);
+
+    if(subscribers.size === 0) {
+        matchSubscribers.delete(matchId);
+    }
+}
+
 
 export function sendJson(socket: WebSocket, payload: unknown) {
 
