@@ -35,7 +35,8 @@ function unsubscribe(matchId:number, socket:WebSocket) {
 
 function cleanupSubscriptions(socket:ExtendedWebSocket) {
     for(const matchId of socket.subscriptions) {
-        unsubscribe(matchId, socket);
+        const numericMatchId = Number(matchId);
+        unsubscribe(numericMatchId, socket);
     }
 }
 
@@ -55,6 +56,19 @@ export function broadcast(wss: WebSocketServer, payload: unknown) {
         client.send(JSON.stringify(payload))
     }
 
+}
+
+function broadcastToMatch(matchId:string, payload:JSON) {
+    const subscribers = matchSubscribers.get(matchId);
+    if(!subscribers || subscribers.size === 0) return;
+
+    const message = JSON.stringify(payload);
+
+    for(const client of subscribers) {
+        if(client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    }
 }
 
 export function attachWebSocketServer(server: Server) {
