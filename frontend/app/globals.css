@@ -110,3 +110,12 @@ body {
 .live-pulse {
   animation: pulseLive 2s infinite ease-in-out;
 }
+
+@keyframes sweep {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
