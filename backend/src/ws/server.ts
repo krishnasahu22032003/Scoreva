@@ -6,19 +6,22 @@ import type { ArcjetNodeRequest } from "@arcjet/node";
 
 export interface ExtendedWebSocket extends WebSocket {
 
-    isAlive: Boolean,
-    subscriptions:Set<string>;
+    isAlive: boolean,
+    subscriptions:Set<number>;
 
 }
 
-const matchSubscribers = new Map();
+const matchSubscribers = new Map<number, Set<WebSocket>>()
 
-function subscribe(matchId:Number, socket:WebSocket) {
-    if(!matchSubscribers.has(matchId)) {
-        matchSubscribers.set(matchId, new Set());
+function subscribe(matchId: number, socket: WebSocket) {
+    let subscribers = matchSubscribers.get(matchId);
+
+    if (!subscribers) {
+        subscribers = new Set<WebSocket>();
+        matchSubscribers.set(matchId, subscribers);
     }
 
-    matchSubscribers.get(matchId).add(socket);
+    subscribers.add(socket);
 }
 
 function unsubscribe(matchId:number, socket:WebSocket) {
@@ -34,10 +37,9 @@ function unsubscribe(matchId:number, socket:WebSocket) {
 }
 
 function cleanupSubscriptions(socket:ExtendedWebSocket) {
-    for(const matchId of socket.subscriptions) {
-        const numericMatchId = Number(matchId);
-        unsubscribe(numericMatchId, socket);
-    }
+  for (const matchId of socket.subscriptions) {
+    unsubscribe(matchId, socket);
+}
 }
 
 
@@ -58,7 +60,7 @@ export function broadcast(wss: WebSocketServer, payload: unknown) {
 
 }
 
-function broadcastToMatch(matchId:string, payload:any) {
+function broadcastToMatch(matchId:number, payload:any) {
     const subscribers = matchSubscribers.get(matchId);
     if(!subscribers || subscribers.size === 0) return;
 
@@ -79,6 +81,7 @@ function handleMessage(socket:ExtendedWebSocket, data:RawData) {
         message = JSON.parse(data.toString());
     } catch {
         sendJson(socket, { type: 'error', message: 'Invalid JSON' });
+        return;
     }
 
     if(message?.type === "subscribe" && Number.isInteger(message.matchId)) {
@@ -98,7 +101,7 @@ function handleMessage(socket:ExtendedWebSocket, data:RawData) {
 export function attachWebSocketServer(server: Server) {
 
 
-    const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 1024 * 1024 });
+    const wss = new WebSocketServer({ noServer:true, maxPayload: 1024 * 1024 });
 
     server.on('upgrade', async (req, socket, head) => {
         const host = req.headers.host ?? "localhost";
@@ -146,20 +149,21 @@ export function attachWebSocketServer(server: Server) {
         socket.on("pong", () => { socket.isAlive = true });
         socket.subscriptions = new Set();
         sendJson(socket, { type: 'welcome' });
-         sendJson(socket, { type: 'welcome' });
+  
 
         socket.on('message', (data) => {
             handleMessage(socket, data);
         });
 
-        socket.on('error', () => {
+        socket.on('error', (err) => {
+            console.error(err);
             socket.terminate();
         });
 
         socket.on('close', () => {
             cleanupSubscriptions(socket);
         })
-        socket.on("error", console.error);
+       
     })
 
     const interval = setInterval(() => {
@@ -169,7 +173,7 @@ export function attachWebSocketServer(server: Server) {
             const socket = ws as ExtendedWebSocket;
             if (socket.isAlive === false) return ws.terminate();
             socket.isAlive = false;
-            socket.ping;
+            socket.ping();
 
         })
     }, 30000);
@@ -180,7 +184,7 @@ export function attachWebSocketServer(server: Server) {
         broadcast(wss, { type: 'match_created', data: match })
 
     }
-     function broadcastCommentary(matchId:string, comment:string) {
+  function broadcastCommentary(matchId:number, comment:string) {
         broadcastToMatch(matchId, { type: 'commentary', data: comment });
     }
 

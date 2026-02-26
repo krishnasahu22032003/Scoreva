@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 interface JwtPayload {
     userId: number;
+
 }
 
 export const AuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -35,16 +36,17 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
             }, select: {
                 id: true,
                 email: true,
-                username: true
+                username: true,
+                role:true
             }
         })
         if (!user) {
-            return res.status(404).json({
+            return res.status(401).json({
                 success: false,
                 message: "User not found",
             });
         }
-        req.user = { id: user.id };
+        req.user = { id: user.id , role:user.role};
 
 
         next();
@@ -52,7 +54,7 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
         console.error("Error in auth middleware:", (e as Error).message);
         res.status(401).json({
             success: false,
-            message: "Internal Server Error",
+            message: "Unauthorized",
         });
     }
 

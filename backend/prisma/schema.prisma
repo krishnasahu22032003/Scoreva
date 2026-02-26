@@ -19,6 +19,8 @@ id        Int      @id @default(autoincrement())
 username  String
 email     String   @unique
 password  String   
+role      ROLE     @default(USER)
+matches   Match[]  @relation("UserMatches")
 createdAt DateTime @default(now())
 
 }
@@ -26,6 +28,8 @@ createdAt DateTime @default(now())
 model Match {
 
 id              Int         @id                  @default(autoincrement())
+creatorId       Int         
+creator         User        @relation("UserMatches",fields: [creatorId],references: [id],onDelete: Cascade)
 sport           String    
 firstTeam       String
 secondTeam      String
@@ -64,5 +68,12 @@ enum MatchStatus{
 UPCOMING
 ENDED
 LIVE
+
+}
+
+enum ROLE{
+
+USER
+ADMIN
 
 }
