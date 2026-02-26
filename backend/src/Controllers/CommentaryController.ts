@@ -45,6 +45,11 @@ export const GetCommentary = async (req: Request, res: Response) => {
 
 export const Commentary = async(req:Request,res:Response)=>{
 
+  if (!req.user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+
 const paramsResult = matchIdParamSchema.safeParse(req.params);
 
     if (!paramsResult.success) {
@@ -58,6 +63,34 @@ const paramsResult = matchIdParamSchema.safeParse(req.params);
     }
 
     try {
+
+    const matchId = paramsResult.data.id;
+
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      select: {
+        id: true,
+        creatorId: true,
+        status: true,
+      },
+    });
+
+    if (!match) {
+      return res.status(404).json({ error: "Match not found." });
+    }
+
+    if (match.creatorId !== req.user.id) {
+      return res.status(403).json({
+        error: "You can only post commentary to your own matches."
+      });
+    }
+
+    if (match.status !== "LIVE") {
+      return res.status(400).json({
+        error: "Commentary can only be added when match is LIVE."
+      });
+    }
+
 const { minute, sequence, period, eventType, actor, team, tags, metadata,message } = bodyResult.data;
 
 const result = await prisma.commentary.create({

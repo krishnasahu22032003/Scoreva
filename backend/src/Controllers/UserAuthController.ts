@@ -18,6 +18,7 @@ export const UserSignUp = async (req: Request, res: Response) => {
                 "Password must include uppercase, lowercase, number, and special character"
             )
             .transform((v) => v.trim()),
+    
     });
 
     const parsedData = inputSchema.safeParse(req.body);
@@ -34,7 +35,7 @@ export const UserSignUp = async (req: Request, res: Response) => {
 
     try {
 
-        const checkUser = await prisma.user.findFirst({
+        const checkUser = await prisma.user.findUnique({
             where: {
                 email: email
             }
@@ -54,7 +55,8 @@ export const UserSignUp = async (req: Request, res: Response) => {
             data: {
                 email,
                 username,
-                password: hashedPassword
+                password: hashedPassword,
+                role:"USER"
             }
         })
 
@@ -70,7 +72,8 @@ export const UserSignUp = async (req: Request, res: Response) => {
             data: {
                 id: newUser.id,
                 email: newUser.email,
-                username: newUser.username
+                username: newUser.username,
+                role:newUser.role
             }
         })
     } catch (error) {
@@ -141,7 +144,7 @@ export const UserSignIn = async (req: Request, res: Response) => {
         return res.status(200).json({
             success: true,
             message: "Signin successful",
-            data: { id: checkUser.id, email: checkUser.email, username: checkUser.username }
+            data: { id: checkUser.id, email: checkUser.email, username: checkUser.username , role:checkUser.role }
 
         });
     } catch (error) {
@@ -187,7 +190,8 @@ try{
         },select: {
         id: true,
         email: true,
-        username: true
+        username: true,
+        role:true
        
       }
     })

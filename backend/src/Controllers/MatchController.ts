@@ -8,6 +8,14 @@ const MAX_LIMIT = 100 ;
 
 export const CreateMatch = async (req:Request,res:Response)=>{
 
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+
 const Parsed = createMatchSchema.safeParse(req.body);
 
 if(!Parsed.success){
@@ -23,6 +31,7 @@ try{
 const event = await prisma.match.create({
     data:{
   ...Parsed.data,
+  creatorId: req.user.id,
     startTime:new Date(Parsed.data.startTime),
     endTime:new Date(Parsed.data.endTime),
     firstTeamScore: Parsed.data.firstTeamScore ?? 0 ,
