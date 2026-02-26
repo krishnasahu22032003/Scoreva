@@ -1,4 +1,4 @@
-import WebSocket, { WebSocketServer } from "ws";
+import WebSocket, { WebSocketServer, type RawData } from "ws";
 import { Server } from "http";
 import type { Match } from "../../generated/prisma/index.js";
 import { wsArcjet } from "../arcjet.js";
@@ -58,7 +58,7 @@ export function broadcast(wss: WebSocketServer, payload: unknown) {
 
 }
 
-function broadcastToMatch(matchId:string, payload:JSON) {
+function broadcastToMatch(matchId:string, payload:any) {
     const subscribers = matchSubscribers.get(matchId);
     if(!subscribers || subscribers.size === 0) return;
 
@@ -72,7 +72,7 @@ function broadcastToMatch(matchId:string, payload:JSON) {
 }
 
 
-function handleMessage(socket:ExtendedWebSocket, data:JSON) {
+function handleMessage(socket:ExtendedWebSocket, data:RawData) {
     let message;
 
     try {
@@ -144,7 +144,21 @@ export function attachWebSocketServer(server: Server) {
     wss.on("connection", async (socket: ExtendedWebSocket, req: ArcjetNodeRequest) => {
         socket.isAlive = true;
         socket.on("pong", () => { socket.isAlive = true });
+        socket.subscriptions = new Set();
         sendJson(socket, { type: 'welcome' });
+         sendJson(socket, { type: 'welcome' });
+
+        socket.on('message', (data) => {
+            handleMessage(socket, data);
+        });
+
+        socket.on('error', () => {
+            socket.terminate();
+        });
+
+        socket.on('close', () => {
+            cleanupSubscriptions(socket);
+        })
         socket.on("error", console.error);
     })
 
@@ -158,8 +172,6 @@ export function attachWebSocketServer(server: Server) {
             socket.ping;
 
         })
-
-
     }, 30000);
 
     wss.on("close", () => { clearInterval(interval) });
@@ -168,5 +180,9 @@ export function attachWebSocketServer(server: Server) {
         broadcast(wss, { type: 'match_created', data: match })
 
     }
-    return { broadcastMatchCreated }
+     function broadcastCommentary(matchId:string, comment:string) {
+        broadcastToMatch(matchId, { type: 'commentary', data: comment });
+    }
+
+    return { broadcastMatchCreated , broadcastCommentary}
 }
