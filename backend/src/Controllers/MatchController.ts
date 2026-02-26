@@ -93,3 +93,51 @@ export const GetMatchData = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const GetMyMatches = async (req: Request, res: Response) => {
+  try {
+    // 🔐 Safety check (should already be handled by middleware)
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const parsed = listMatchesQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid query parameters",
+        details: parsed.error.flatten(),
+      });
+    }
+
+    const limit = Math.min(parsed.data.limit ?? 50, MAX_LIMIT);
+    const page = parsed.data.page ?? 0;
+
+    const matches = await prisma.match.findMany({
+      where: {
+        creatorId: req.user.id, // 🔥 Only this admin's matches
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip: page * limit,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: matches,
+    });
+
+  } catch (error) {
+    console.error("Failed to fetch admin matches:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
