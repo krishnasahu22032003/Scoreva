@@ -1,9 +1,11 @@
 import express from "express";
 import { Commentary, GetCommentary } from "../Controllers/CommentaryController.js";
+import { AuthMiddleware } from "../Middlewares/AuthMiddleware.js";
+import { AdminMiddleware } from "../Middlewares/AdminMiddleware.js";
 
 const CommentaryRouter = express.Router();
 
-CommentaryRouter.get("/:id",GetCommentary)
-CommentaryRouter.post("/:id",Commentary)
+CommentaryRouter.get("/:id",AuthMiddleware,GetCommentary)
+CommentaryRouter.post("/:id",AuthMiddleware,AdminMiddleware,Commentary)
 
 export default CommentaryRouter;
