@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <header className="fixed top-0 left-0 w-full z-50">
       <div className="mx-auto max-w-7xl px-6">
@@ -38,7 +39,10 @@ export default function Header() {
 
           <div className="hidden md:flex items-center gap-4">
       
-            <Button variant="primary" className="px-5 py-2 text-xs cursor-pointer">
+            <Button onClick={() => {
+  setOpen(false);
+  router.push("/user/signup");
+}} variant="primary" className="px-5 py-2 text-xs cursor-pointer">
               Get Started
             </Button>
           </div>
@@ -72,7 +76,11 @@ export default function Header() {
           <Button
             variant="primary"
             className="w-full text-xs"
-            onClick={() => setOpen(false)}
+           onClick={() => {
+  setOpen(false);
+  router.push("/user/signup");
+}}
+            
           >
             Get Started
           </Button>

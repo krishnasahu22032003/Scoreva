@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Orbitron, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 
 const orbitron = Orbitron({
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${orbitron.variable} ${inter.variable} ${spaceMono.variable} antialiased`}
       >
         {children}
+        <Footer/>
       </body>
     </html>
   );
