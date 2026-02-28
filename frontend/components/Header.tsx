@@ -14,6 +14,7 @@ export default function Header() {
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-[var(--border-subtle)] bg-[rgba(15,22,41,0.6)] backdrop-blur-xl px-6 py-4 shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
 
           <Link href="/" className="flex items-center gap-2">
+            
             <span className="text-xl font-[var(--font-heading)] tracking-widest uppercase text-foreground">
               Scoreva
             </span>
