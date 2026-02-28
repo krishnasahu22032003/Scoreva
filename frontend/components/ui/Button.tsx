@@ -27,7 +27,7 @@ export default function Button({
           "bg-gradient-to-r from-[var(--crimson)] to-[var(--violet)] text-white shadow-lg hover:shadow-[0_0_25px_rgba(255,18,79,0.6)]":
             variant === "primary",
 
-          "bg-[var(--live)] text-black shadow-lg hover:shadow-[0_0_25px_rgba(0,255,148,0.6)]":
+         "bg-[var(--live)]/90 text-[#04140E] shadow-[0_6px_20px_rgba(0,255,148,0.18)] hover:shadow-[0_10px_28px_rgba(0,255,148,0.28)] transition-all duration-300":
             variant === "live",
 
           "bg-transparent border border-[var(--border-strong)] text-foreground hover:border-[var(--cyan)] hover:text-[var(--cyan)]":
