@@ -184,10 +184,10 @@ export default function AdminSignupPage() {
             <button
               type="submit"
               disabled={!allValid || loading}
-              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-                !allValid || loading
-                  ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
-                  : "bg-[var(--crimson)] text-white hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(255,18,79,0.35)]"
+              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+               !allValid || loading
+  ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] cursor-not-allowed"
+  : "bg-[#8E0E2F] text-[var(--foreground)] hover:bg-[#770C27] hover:-translate-y-[1px] transition-all duration-300"
               }`}
             >
               {loading ? (
@@ -205,7 +205,7 @@ export default function AdminSignupPage() {
           <p className="mt-5 text-xs text-center text-[var(--text-secondary)]">
             Already an admin?{" "}
             <Link
-              href="/admin/signin"
+              href="/signin"
               className="text-[var(--foreground)] hover:text-[var(--violet)] transition-colors"
             >
               Sign in

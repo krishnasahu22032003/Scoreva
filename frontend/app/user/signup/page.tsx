@@ -53,7 +53,7 @@ export default function SignupPage() {
      toast.success("Account created successfully");
 
      setTimeout(() => {
-         router.push("/user/signin");
+         router.push("/signin");
      }, 1500);
    
     } catch (err) {
@@ -201,7 +201,7 @@ export default function SignupPage() {
           <p className="mt-5 text-xs text-center text-[var(--text-secondary)]">
             Already have an account?{" "}
             <Link
-              href="/login"
+              href="/signin"
               className="text-[var(--foreground)] hover:text-[var(--violet)] transition-colors"
             >
               Sign in
