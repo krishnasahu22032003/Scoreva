@@ -6,6 +6,8 @@ import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export default function SignupPage() {
+  const [email , setEmail] = useState("");
+  const [username , setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState("");
@@ -27,44 +29,54 @@ export default function SignupPage() {
   const allValid = passwordValid && passwordsMatch;
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-[var(--background)]">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="glass p-10">
+        <div className="glass p-8">
 
-          <h1 className="text-2xl sm:text-3xl font-semibold font-[var(--font-heading)] tracking-tight">
+          <h1 className="text-2xl font-semibold font-[var(--font-heading)] tracking-tight">
             Sign up as{" "}
             <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
               User
             </span>
           </h1>
 
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">
-            Create your account to start experiencing real-time sports updates.
+          <p className="mt-2 text-xs text-[var(--text-secondary)]">
+            Create your account for real-time sports updates.
           </p>
 
-          <form className="mt-8 space-y-6">
+          <form className="mt-6 space-y-5">
 
-            <InputField label="Full Name" placeholder="Krishna Sahu" />
+            <InputField
+              onChange={(e)=> setUsername(e.target.value)}
+              label="Full Name"
+              placeholder="Enter your full name"
+            />
 
-            <InputField label="Email" type="email" placeholder="you@example.com" />
+            <InputField
+            onChange={(e)=> setEmail(e.target.value)}
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+            />
 
+            {/* PASSWORD */}
             <div>
-              <label className="text-sm text-[var(--text-secondary)]">
+              <label className="text-xs text-[var(--text-secondary)]">
                 Password
               </label>
 
-              <div className="relative mt-2">
+              <div className="relative mt-1">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-4 py-3 pr-12 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
-                  placeholder="Create a secure password"
+                  className="w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
+                  placeholder="Create password"
                 />
 
                 <button
@@ -72,36 +84,38 @@ export default function SignupPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
 
-              <div className="mt-4 space-y-2">
-                <PasswordRule label="Minimum 8 characters" valid={rules.length} />
-                <PasswordRule label="One uppercase letter" valid={rules.uppercase} />
-                <PasswordRule label="One number" valid={rules.number} />
-                <PasswordRule label="One special character" valid={rules.special} />
+              {/* INLINE RULES */}
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                <PasswordRule label="8+ chars" valid={rules.length} />
+                <PasswordRule label="Uppercase" valid={rules.uppercase} />
+                <PasswordRule label="Number" valid={rules.number} />
+                <PasswordRule label="Special" valid={rules.special} />
               </div>
             </div>
 
+            {/* CONFIRM PASSWORD */}
             <div>
-              <label className="text-sm text-[var(--text-secondary)]">
+              <label className="text-xs text-[var(--text-secondary)]">
                 Confirm Password
               </label>
 
-              <div className="relative mt-2">
+              <div className="relative mt-1">
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full rounded-lg bg-[var(--surface-elevated)] border px-4 py-3 pr-12 text-sm focus:outline-none transition-colors ${
+                  className={`w-full rounded-lg bg-[var(--surface-elevated)] border px-3 py-2 pr-10 text-sm focus:outline-none transition-colors ${
                     confirmPassword.length === 0
                       ? "border-[var(--border-subtle)]"
                       : passwordsMatch
                       ? "border-[var(--live)]"
                       : "border-[var(--error)]"
                   }`}
-                  placeholder="Re-enter your password"
+                  placeholder="Re-enter password"
                 />
 
                 <button
@@ -109,12 +123,12 @@ export default function SignupPage() {
                   onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors"
                 >
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
 
               {confirmPassword.length > 0 && !passwordsMatch && (
-                <p className="mt-2 text-xs text-[var(--error)]">
+                <p className="mt-1 text-xs text-[var(--error)]">
                   Passwords do not match
                 </p>
               )}
@@ -123,9 +137,9 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={!allValid}
-              className={`w-full rounded-xl py-3 text-sm font-medium transition-all duration-300 ${
+              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 cursor-pointer ${
                 allValid
-                  ? "bg-[var(--live)] text-[#042017] shadow-[0_6px_18px_rgba(0,255,148,0.18)] hover:-translate-y-[2px] hover:shadow-[0_10px_24px_rgba(0,255,148,0.28)]"
+                  ? "bg-[var(--live)] text-[#042017] hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(0,255,148,0.25)]"
                   : "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
               }`}
             >
@@ -134,11 +148,11 @@ export default function SignupPage() {
 
           </form>
 
-          <p className="mt-6 text-sm text-center text-[var(--text-secondary)]">
+          <p className="mt-5 text-xs text-center text-[var(--text-secondary)]">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-[var(--foreground)] hover:text-[var(--violet)] transition-colors duration-300"
+              className="text-[var(--foreground)] hover:text-[var(--violet)] transition-colors"
             >
               Sign in
             </Link>
@@ -154,20 +168,23 @@ function InputField({
   label,
   type = "text",
   placeholder,
+  onChange
 }: {
   label: string;
   type?: string;
   placeholder: string;
+  onChange:(e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div>
-      <label className="text-sm text-[var(--text-secondary)]">
+      <label className="text-xs text-[var(--text-secondary)]">
         {label}
       </label>
       <input
-        type={type}
-        className="mt-2 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-4 py-3 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
-        placeholder={placeholder}
+      
+      type={type}
+      className="mt-1 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
+      placeholder={placeholder}
       />
     </div>
   );
@@ -181,9 +198,9 @@ function PasswordRule({
   valid: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2 text-xs">
+    <div className="flex items-center gap-1 text-[10px]">
       <CheckCircle2
-        size={14}
+        size={12}
         className={valid ? "text-[var(--live)]" : "text-[var(--text-muted)]"}
       />
       <span
