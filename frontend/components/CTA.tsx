@@ -65,7 +65,7 @@ export default function CTA() {
             variants={fadeUp}
             className="relative mt-10 flex justify-center"
           >
-            <Link href="/signup">
+            <Link href="/user/signup">
               <motion.div
                 whileHover={{ y: -3 }}
                 transition={{ duration: 0.25 }}

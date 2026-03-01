@@ -181,7 +181,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={!allValid || loading}
-              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                 !allValid || loading
                   ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
                   : "bg-[var(--live)] text-[#042017] hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(0,255,148,0.25)]"
@@ -189,7 +189,7 @@ export default function SignupPage() {
             >
               {loading ? (
                 <>
-                  <span className="h-4 w-4 border-2 border-[#042017] border-t-transparent rounded-full animate-spin" />
+                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Creating account...
                 </>
               ) : (

@@ -117,7 +117,7 @@ export default function SigninPage() {
             <button
               type="submit"
               disabled={!allValid || loading}
-              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                 !allValid || loading
                   ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] cursor-not-allowed"
                   : "bg-[#3E35A8] text-[var(--foreground)] hover:bg-[#342C8C] hover:-translate-y-[1px]"

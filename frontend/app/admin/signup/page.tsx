@@ -54,7 +54,7 @@ export default function AdminSignupPage() {
       toast.success("Admin account created successfully");
 
       setTimeout(() => {
-        router.replace("/admin/signin");
+        router.replace("/signin");
       }, 1200);
 
     } catch (err) {
