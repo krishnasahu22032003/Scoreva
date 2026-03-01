@@ -6,7 +6,7 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { UserSignin } from "@/lib/userSignin";
+import { UserSignin } from "@/lib/signin";
 
 export default function SigninPage() {
   const router = useRouter();
