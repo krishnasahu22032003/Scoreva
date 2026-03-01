@@ -4,8 +4,10 @@ import UserRouter from "./Routes/UserAuthRoutes.js";
 import MatchRouter from "./Routes/MatchRoutes.js";
 import { securityMiddleware } from "./arcjet.js";
 import CommentaryRouter from "./Routes/CommentaryRoute.js";
+import cors from "cors"
 
 const app = express();
+app.use(cors({origin: "http://localhost:3000",credentials:true}))
 app.use(express.json());
 // app.use(securityMiddleware)
 

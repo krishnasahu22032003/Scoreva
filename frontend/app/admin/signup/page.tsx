@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Shield } from "lucide-react";
 import Link from "next/link";
-import { UserSignup } from "@/lib/userSignup";
+import { AdminSignup } from "@/lib/adminSignup";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function SignupPage() {
+export default function AdminSignupPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,13 +17,14 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   const rules = {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
     number: /[0-9]/.test(password),
     special: /[^A-Za-z0-9]/.test(password),
   };
- const router = useRouter();
 
   const passwordValid =
     rules.length && rules.uppercase && rules.number && rules.special;
@@ -43,24 +44,24 @@ export default function SignupPage() {
 
     setLoading(true);
 
-
     try {
-      const response = await UserSignup({
+      await AdminSignup({
         username,
         email,
         password,
       });
-     toast.success("Account created successfully");
 
-     setTimeout(() => {
-         router.push("/user/signin");
-     }, 1500);
-   
+      toast.success("Admin account created successfully");
+
+      setTimeout(() => {
+        router.replace("/admin/signin");
+      }, 1200);
+
     } catch (err) {
       if (err instanceof Error) {
-       toast.error(err.message);
+        toast.error(err.message);
       } else {
-         toast.error("Something went wrong");
+        toast.error("Something went wrong");
       }
     } finally {
       setLoading(false);
@@ -76,33 +77,37 @@ export default function SignupPage() {
         className="w-full max-w-md"
       >
         <div className="glass p-8">
-          <h1 className="text-2xl font-semibold font-[var(--font-heading)] tracking-tight">
-            Sign up as{" "}
-            <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
-              User
-            </span>
-          </h1>
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-[var(--crimson)]" />
+            <h1 className="text-2xl font-semibold font-[var(--font-heading)] tracking-tight">
+              Sign up as{" "}
+              <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
+                Admin
+              </span>
+            </h1>
+          </div>
 
           <p className="mt-2 text-xs text-[var(--text-secondary)]">
-            Create your account for real-time sports updates.
+            Create an admin account to manage matches, commentary, and real-time controls.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+
             <InputField
-            value={username}
+              value={username}
               disabled={loading}
               onChange={(e) => setUsername(e.target.value)}
               label="Full Name"
-              placeholder="Enter your full name"
+              placeholder="Enter admin name"
             />
 
             <InputField
-            value={email}
+              value={email}
               disabled={loading}
               onChange={(e) => setEmail(e.target.value)}
               label="Email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="admin@example.com"
             />
 
             <div>
@@ -117,7 +122,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors disabled:opacity-60"
-                  placeholder="Create password"
+                  placeholder="Create secure password"
                 />
 
                 <button
@@ -148,9 +153,7 @@ export default function SignupPage() {
                   disabled={loading}
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(e) =>
-                    setConfirmPassword(e.target.value)
-                  }
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className={`w-full rounded-lg bg-[var(--surface-elevated)] border px-3 py-2 pr-10 text-sm focus:outline-none transition-colors disabled:opacity-60 ${
                     confirmPassword.length === 0
                       ? "border-[var(--border-subtle)]"
@@ -184,24 +187,25 @@ export default function SignupPage() {
               className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                 !allValid || loading
                   ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
-                  : "bg-[var(--live)] text-[#042017] hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(0,255,148,0.25)]"
+                  : "bg-[var(--crimson)] text-white hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(255,18,79,0.35)]"
               }`}
             >
               {loading ? (
                 <>
-                  <span className="h-4 w-4 border-2 border-[#042017] border-t-transparent rounded-full animate-spin" />
-                  Creating account...
+                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating admin...
                 </>
               ) : (
-                "Sign up as User"
+                "Create Admin Account"
               )}
             </button>
+
           </form>
 
           <p className="mt-5 text-xs text-center text-[var(--text-secondary)]">
-            Already have an account?{" "}
+            Already an admin?{" "}
             <Link
-              href="/login"
+              href="/admin/signin"
               className="text-[var(--foreground)] hover:text-[var(--violet)] transition-colors"
             >
               Sign in
@@ -219,14 +223,14 @@ function InputField({
   placeholder,
   onChange,
   disabled,
-  value
+  value,
 }: {
   label: string;
   type?: string;
   placeholder: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
-  value:string
+  value: string;
 }) {
   return (
     <div>
@@ -234,7 +238,7 @@ function InputField({
         {label}
       </label>
       <input
-      value={value}
+        value={value}
         disabled={disabled}
         type={type}
         onChange={onChange}

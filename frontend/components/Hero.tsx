@@ -28,6 +28,7 @@ const fadeUp = {
 };
 
 export default function Hero() {
+
   return (
     <section className="relative pt-32 pb-32 px-6 overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_25%_25%,rgba(122,92,255,0.18),transparent_45%),radial-gradient(circle_at_75%_0%,rgba(0,229,255,0.15),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(255,0,92,0.12),transparent_50%)]" />
@@ -93,7 +94,7 @@ export default function Hero() {
           variants={fadeUp}
           className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6"
         >
-          <Link href="/signup">
+          <Link href="/user/signup">
             <Button
               variant="primary"
               className="group relative px-6 py-4 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-[1.03] cursor-pointer"
@@ -106,8 +107,7 @@ export default function Hero() {
           </Link>
 
           <Link href="/admin/signup">
-            <Button
-              variant="live"
+            <Button     variant="live"
               className="group relative px-6 py-4 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-[1.03] cursor-pointer"
             >
               <span className="flex items-center gap-2">

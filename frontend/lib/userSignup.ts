@@ -26,7 +26,7 @@ export async function UserSignup(
             data,
             { withCredentials: true }
         );
-
+        console.log(response.data)
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError) {
