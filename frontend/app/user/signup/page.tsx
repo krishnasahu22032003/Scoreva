@@ -4,14 +4,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { UserSignup } from "@/lib/userSignup";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
-  const [email , setEmail] = useState("");
-  const [username , setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const rules = {
     length: password.length >= 8,
@@ -19,6 +23,7 @@ export default function SignupPage() {
     number: /[0-9]/.test(password),
     special: /[^A-Za-z0-9]/.test(password),
   };
+ const router = useRouter();
 
   const passwordValid =
     rules.length && rules.uppercase && rules.number && rules.special;
@@ -26,7 +31,41 @@ export default function SignupPage() {
   const passwordsMatch =
     password.length > 0 && password === confirmPassword;
 
-  const allValid = passwordValid && passwordsMatch;
+  const allValid =
+    passwordValid &&
+    passwordsMatch &&
+    username.trim() !== "" &&
+    email.trim() !== "";
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+
+
+    try {
+      const response = await UserSignup({
+        username,
+        email,
+        password,
+      });
+     toast.success("Account created successfully");
+
+     setTimeout(() => {
+         router.push("/user/signin");
+     }, 1500);
+   
+    } catch (err) {
+      if (err instanceof Error) {
+       toast.error(err.message);
+      } else {
+         toast.error("Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
@@ -37,7 +76,6 @@ export default function SignupPage() {
         className="w-full max-w-md"
       >
         <div className="glass p-8">
-
           <h1 className="text-2xl font-semibold font-[var(--font-heading)] tracking-tight">
             Sign up as{" "}
             <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
@@ -49,22 +87,22 @@ export default function SignupPage() {
             Create your account for real-time sports updates.
           </p>
 
-          <form className="mt-6 space-y-5">
-
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <InputField
-              onChange={(e)=> setUsername(e.target.value)}
+              disabled={loading}
+              onChange={(e) => setUsername(e.target.value)}
               label="Full Name"
               placeholder="Enter your full name"
             />
 
             <InputField
-            onChange={(e)=> setEmail(e.target.value)}
+              disabled={loading}
+              onChange={(e) => setEmail(e.target.value)}
               label="Email"
               type="email"
               placeholder="you@example.com"
             />
 
-            {/* PASSWORD */}
             <div>
               <label className="text-xs text-[var(--text-secondary)]">
                 Password
@@ -72,15 +110,17 @@ export default function SignupPage() {
 
               <div className="relative mt-1">
                 <input
+                  disabled={loading}
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
+                  className="w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors disabled:opacity-60"
                   placeholder="Create password"
                 />
 
                 <button
                   type="button"
+                  disabled={loading}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors"
                 >
@@ -88,7 +128,6 @@ export default function SignupPage() {
                 </button>
               </div>
 
-              {/* INLINE RULES */}
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
                 <PasswordRule label="8+ chars" valid={rules.length} />
                 <PasswordRule label="Uppercase" valid={rules.uppercase} />
@@ -97,7 +136,6 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* CONFIRM PASSWORD */}
             <div>
               <label className="text-xs text-[var(--text-secondary)]">
                 Confirm Password
@@ -105,10 +143,13 @@ export default function SignupPage() {
 
               <div className="relative mt-1">
                 <input
+                  disabled={loading}
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full rounded-lg bg-[var(--surface-elevated)] border px-3 py-2 pr-10 text-sm focus:outline-none transition-colors ${
+                  onChange={(e) =>
+                    setConfirmPassword(e.target.value)
+                  }
+                  className={`w-full rounded-lg bg-[var(--surface-elevated)] border px-3 py-2 pr-10 text-sm focus:outline-none transition-colors disabled:opacity-60 ${
                     confirmPassword.length === 0
                       ? "border-[var(--border-subtle)]"
                       : passwordsMatch
@@ -120,6 +161,7 @@ export default function SignupPage() {
 
                 <button
                   type="button"
+                  disabled={loading}
                   onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors"
                 >
@@ -136,16 +178,22 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={!allValid}
-              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 cursor-pointer ${
-                allValid
-                  ? "bg-[var(--live)] text-[#042017] hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(0,255,148,0.25)]"
-                  : "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
+              disabled={!allValid || loading}
+              className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                !allValid || loading
+                  ? "bg-[var(--surface-elevated)] text-[var(--text-muted)] cursor-not-allowed"
+                  : "bg-[var(--live)] text-[#042017] hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(0,255,148,0.25)]"
               }`}
             >
-              Sign up as User
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 border-2 border-[#042017] border-t-transparent rounded-full animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Sign up as User"
+              )}
             </button>
-
           </form>
 
           <p className="mt-5 text-xs text-center text-[var(--text-secondary)]">
@@ -157,7 +205,6 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
-
         </div>
       </motion.div>
     </div>
@@ -168,12 +215,14 @@ function InputField({
   label,
   type = "text",
   placeholder,
-  onChange
+  onChange,
+  disabled,
 }: {
   label: string;
   type?: string;
   placeholder: string;
-  onChange:(e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }) {
   return (
     <div>
@@ -181,10 +230,11 @@ function InputField({
         {label}
       </label>
       <input
-      
-      type={type}
-      className="mt-1 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
-      placeholder={placeholder}
+        disabled={disabled}
+        type={type}
+        onChange={onChange}
+        className="mt-1 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors disabled:opacity-60"
+        placeholder={placeholder}
       />
     </div>
   );
@@ -201,7 +251,9 @@ function PasswordRule({
     <div className="flex items-center gap-1 text-[10px]">
       <CheckCircle2
         size={12}
-        className={valid ? "text-[var(--live)]" : "text-[var(--text-muted)]"}
+        className={
+          valid ? "text-[var(--live)]" : "text-[var(--text-muted)]"
+        }
       />
       <span
         className={

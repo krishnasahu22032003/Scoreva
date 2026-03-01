@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
-
+import { Toaster } from "react-hot-toast";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -38,7 +38,18 @@ export default function RootLayout({
       <body
         className={`${orbitron.variable} ${inter.variable} ${spaceMono.variable} antialiased`}
       >
+  
         {children}
+              <Toaster
+  position="top-right"
+  toastOptions={{
+    style: {
+      background: "#141D35",
+      color: "#F3F6FF",
+      border: "1px solid rgba(255,255,255,0.12)",
+    },
+  }}
+/>
         <Footer/>
       </body>
     </html>
