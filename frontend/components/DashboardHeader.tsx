@@ -74,14 +74,6 @@ export default function AdminDashboardHeader({ onCreateClick }: Props) {
               Create Match
             </button>
 
-            <button
-              onClick={() => router.push("/admin/dashboard/commentary")}
-              className="flex items-center cursor-pointer gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-all duration-300 hover:scale-[1.02]"
-            >
-              <MessageSquareText size={16} />
-              Commentary
-            </button>
-
           </nav>
 
           {/* Profile */}
@@ -132,18 +124,7 @@ export default function AdminDashboardHeader({ onCreateClick }: Props) {
             <PlusCircle size={16} />
             Create Match
           </button>
-
-          <button
-            onClick={() => {
-              setOpen(false);
-              router.push("/admin/dashboard/commentary");
-            }}
-            className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-colors"
-          >
-            <MessageSquareText size={16} />
-            Commentary
-          </button>
-
+          
           <button
             onClick={() => {
               setOpen(false);
