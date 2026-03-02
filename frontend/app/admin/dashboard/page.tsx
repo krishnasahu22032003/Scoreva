@@ -4,17 +4,18 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { X, CalendarDays, MessageSquareText } from "lucide-react";
-
+import { X, CalendarDays, MessageSquareText, Radio } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { getAdminMatches, AdminMatch } from "@/lib/getAdminMatches";
 import { postCommentary } from "@/lib/commentary";
 import { ENV } from "@/lib/ENV";
 import AdminDashboardHeader from "@/components/DashboardHeader";
+import { div } from "framer-motion/client";
 
 export default function AdminDashboard() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter()
   // Create Match Modal
   const [openModal, setOpenModal] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -246,7 +247,8 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
                 </div>
 
                 {match.status === "LIVE" && (
-                  <button
+                  <div>
+ <button
                     onClick={() => {
                       setSelectedMatchId(match.id);
                       setCommentaryOpen(true);
@@ -256,6 +258,16 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
                     <MessageSquareText size={14} />
                     Add Commentary
                   </button>
+                  <button
+  onClick={() => router.push(`/admin/dashboard/match/${match.id}`)}
+  className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
+>
+  <Radio size={14} />
+  View Live Feed
+</button>
+                  </div>
+                 
+                  
                 )}
               </motion.div>
             ))}
