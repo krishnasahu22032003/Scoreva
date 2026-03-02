@@ -8,7 +8,7 @@ const MatchRouter = express.Router()
 MatchRouter.post("/create",AuthMiddleware,AdminMiddleware,CreateMatch);
 MatchRouter.get("/get-match",AuthMiddleware,GetMatchData);
 MatchRouter.get(
-  "/my",
+  "/admin",
   AuthMiddleware,
   AdminMiddleware,
   GetMyMatches
