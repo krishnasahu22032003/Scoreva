@@ -133,7 +133,7 @@ export const UserSignIn = async (req: Request, res: Response) => {
             })
         }
 
-        const token = jwt.sign({ userId: checkUser.id }, secret, { expiresIn: "7d" })
+        const token = jwt.sign({ userId: checkUser.id ,role:checkUser.role}, secret, { expiresIn: "7d" })
 
         res.cookie("auth_token", token, {
             httpOnly: true,
