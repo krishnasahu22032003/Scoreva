@@ -4,17 +4,36 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { X, CalendarDays } from "lucide-react";
+import { X, CalendarDays, MessageSquareText } from "lucide-react";
 
 import { getAdminMatches, AdminMatch } from "@/lib/getAdminMatches";
+import { postCommentary } from "@/lib/commentary";
 import { ENV } from "@/lib/ENV";
 import AdminDashboardHeader from "@/components/DashboardHeader";
 
 export default function AdminDashboard() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Create Match Modal
   const [openModal, setOpenModal] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  // Commentary Modal
+  const [commentaryOpen, setCommentaryOpen] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [postingCommentary, setPostingCommentary] = useState(false);
+
+// Commentary States
+const [commentaryMinute, setCommentaryMinute] = useState("");
+const [commentarySequence, setCommentarySequence] = useState("");
+const [commentaryPeriod, setCommentaryPeriod] = useState("");
+const [commentaryEventType, setCommentaryEventType] = useState("");
+const [commentaryActor, setCommentaryActor] = useState("");
+const [commentaryTeam, setCommentaryTeam] = useState("");
+const [commentaryTags, setCommentaryTags] = useState("");
+const [commentaryMetadata, setCommentaryMetadata] = useState("");
+const [commentaryMessage, setCommentaryMessage] = useState("");
 
   const [form, setForm] = useState({
     sport: "",
@@ -26,7 +45,6 @@ export default function AdminDashboard() {
     endTime: "",
   });
 
-  // 🔥 Fetch Matches
   useEffect(() => {
     async function fetchData() {
       try {
@@ -41,7 +59,8 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // 🔥 Create Match
+  // ---------------- CREATE MATCH ----------------
+
   const handleCreateMatch = async () => {
     const {
       sport,
@@ -66,7 +85,6 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Combine date + time
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
 
@@ -105,7 +123,6 @@ export default function AdminDashboard() {
         endDate: "",
         endTime: "",
       });
-
     } catch {
       toast.error("Failed to create match");
     } finally {
@@ -113,13 +130,73 @@ export default function AdminDashboard() {
     }
   };
 
+  // ---------------- POST COMMENTARY ----------------
+const handlePostCommentary = async () => {
+  if (!selectedMatchId) return;
+
+  if (!commentaryMessage.trim()) {
+    toast.error("Commentary message is required");
+    return;
+  }
+
+  let parsedMetadata: Record<string, unknown> | undefined;
+
+  if (commentaryMetadata.trim()) {
+    try {
+      parsedMetadata = JSON.parse(commentaryMetadata);
+    } catch {
+      toast.error("Metadata must be valid JSON");
+      return;
+    }
+  }
+const selectedMatch = matches.find(m => m.id === selectedMatchId);
+if (!selectedMatch || selectedMatch.status !== "LIVE") {
+  toast.error("Commentary allowed only when match is LIVE");
+  return;
+}
+  try {
+    setPostingCommentary(true);
+
+    await postCommentary(selectedMatchId, {
+      minute: commentaryMinute ? Number(commentaryMinute) : undefined,
+      sequence: commentarySequence ? Number(commentarySequence) : undefined,
+      period: commentaryPeriod || undefined,
+      eventType: commentaryEventType || undefined,
+      actor: commentaryActor || undefined,
+      team: commentaryTeam || undefined,
+      tags: commentaryTags
+        ? commentaryTags.split(",").map((tag) => tag.trim())
+        : undefined,
+      metadata: parsedMetadata,
+      message: commentaryMessage,
+    });
+
+    toast.success("Commentary added successfully");
+
+    // Reset fields
+    setCommentaryMinute("");
+    setCommentarySequence("");
+    setCommentaryPeriod("");
+    setCommentaryEventType("");
+    setCommentaryActor("");
+    setCommentaryTeam("");
+    setCommentaryTags("");
+    setCommentaryMetadata("");
+    setCommentaryMessage("");
+
+    setCommentaryOpen(false);
+  } catch (err: any) {
+    toast.error(err.message || "Failed to post commentary");
+  } finally {
+    setPostingCommentary(false);
+  }
+};
+
   return (
     <>
       <AdminDashboardHeader onCreateClick={() => setOpenModal(true)} />
 
       <div className="space-y-10">
-
-        {/* Title */}
         <div className="flex items-center justify-between pt-4 md:pt-6">
           <h1 className="text-3xl md:text-4xl font-[var(--font-heading)] font-semibold tracking-tight">
             Your{" "}
@@ -129,14 +206,12 @@ export default function AdminDashboard() {
           </h1>
         </div>
 
-        {/* Loading */}
         {loading && (
           <div className="flex justify-center py-20">
             <div className="h-6 w-6 border-2 border-[var(--cyan)] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && matches.length === 0 && (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <p className="text-[var(--text-muted)] text-sm">
@@ -148,7 +223,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Matches Grid */}
         {!loading && matches.length > 0 && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {matches.map((match) => (
@@ -170,13 +244,141 @@ export default function AdminDashboard() {
                   <CalendarDays size={14} />
                   {new Date(match.startTime).toLocaleString()}
                 </div>
+
+                {match.status === "LIVE" && (
+                  <button
+                    onClick={() => {
+                      setSelectedMatchId(match.id);
+                      setCommentaryOpen(true);
+                    }}
+                    className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
+                  >
+                    <MessageSquareText size={14} />
+                    Add Commentary
+                  </button>
+                )}
               </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/*COMMENTARY MODAL */}
+<AnimatePresence>
+  {commentaryOpen && (
+    <motion.div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 "
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="glass w-full max-w-xl p-8 relative max-h-[90vh] overflow-y-auto hide-scrollbar"
+      >
+        <button
+          onClick={() => {
+  setCommentaryOpen(false);
+  setCommentaryMessage("");
+}}
+          className="absolute cursor-pointer right-4 top-4 text-[var(--text-muted)] hover:text-[var(--foreground)]"
+        >
+          <X size={18} />
+        </button>
+
+        <h2 className="text-lg font-semibold mb-6">
+          Add Commentary
+        </h2>
+
+        <div className="space-y-4">
+
+          <Input
+            label="Minute"
+            type="number"
+            value={commentaryMinute}
+            onChange={setCommentaryMinute}
+          />
+
+          <Input
+            label="Sequence"
+            type="number"
+            value={commentarySequence}
+            onChange={setCommentarySequence}
+          />
+
+          <Input
+            label="Period"
+            value={commentaryPeriod}
+            onChange={setCommentaryPeriod}
+          />
+
+          <Input
+            label="Event Type"
+            value={commentaryEventType}
+            onChange={setCommentaryEventType}
+          />
+
+          <Input
+            label="Actor"
+            value={commentaryActor}
+            onChange={setCommentaryActor}
+          />
+
+          <Input
+            label="Team"
+            value={commentaryTeam}
+            onChange={setCommentaryTeam}
+          />
+
+          <Input
+            label="Tags (comma separated)"
+            value={commentaryTags}
+            onChange={setCommentaryTags}
+          />
+
+          <div>
+            <label className="text-xs text-[var(--text-secondary)]">
+              Metadata (JSON optional)
+            </label>
+            <textarea
+              value={commentaryMetadata}
+              onChange={(e) => setCommentaryMetadata(e.target.value)}
+              rows={3}
+              className="mt-1 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-[var(--text-secondary)]">
+              Message *
+            </label>
+            <textarea
+              value={commentaryMessage}
+              onChange={(e) => setCommentaryMessage(e.target.value)}
+              rows={4}
+              placeholder="Write live commentary..."
+              className="mt-1 w-full rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3 py-2 text-sm focus:outline-none focus:border-[var(--violet)] transition-colors"
+            />
+          </div>
+
+          <button
+            onClick={handlePostCommentary}
+            disabled={postingCommentary}
+            className="mt-4 w-full cursor-pointer rounded-xl py-2.5 text-sm font-medium bg-[var(--crimson)] hover:opacity-90 transition-all shadow-[var(--glow-crimson)]"
+          >
+            {postingCommentary ? "Posting..." : "Post Commentary"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+      {/* ---------------- CREATE MATCH MODAL ---------------- */}
+
       <AnimatePresence>
         {openModal && (
           <motion.div
@@ -204,7 +406,6 @@ export default function AdminDashboard() {
               </h2>
 
               <div className="space-y-4">
-
                 <Input label="Sport" value={form.sport}
                   onChange={(v) => setForm({ ...form, sport: v })} />
 
@@ -214,7 +415,6 @@ export default function AdminDashboard() {
                 <Input label="Second Team" value={form.secondTeam}
                   onChange={(v) => setForm({ ...form, secondTeam: v })} />
 
-                {/* Start Date + Time */}
                 <div className="grid grid-cols-2 gap-4">
                   <Input type="date" label="Start Date"
                     value={form.startDate}
@@ -225,7 +425,6 @@ export default function AdminDashboard() {
                     onChange={(v) => setForm({ ...form, startTime: v })} />
                 </div>
 
-                {/* End Date + Time */}
                 <div className="grid grid-cols-2 gap-4">
                   <Input type="date" label="End Date"
                     value={form.endDate}
@@ -243,7 +442,6 @@ export default function AdminDashboard() {
                 >
                   {creating ? "Creating..." : "Create Match"}
                 </button>
-
               </div>
             </motion.div>
           </motion.div>

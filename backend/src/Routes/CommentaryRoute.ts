@@ -6,6 +6,6 @@ import { AdminMiddleware } from "../Middlewares/AdminMiddleware.js";
 const CommentaryRouter = express.Router();
 
 CommentaryRouter.get("/:id",AuthMiddleware,GetCommentary)
-CommentaryRouter.post("/:id",AuthMiddleware,AdminMiddleware,Commentary)
+CommentaryRouter.post("/create/:id",AuthMiddleware,AdminMiddleware,Commentary)
 
 export default CommentaryRouter;
