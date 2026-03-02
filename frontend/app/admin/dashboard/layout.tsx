@@ -1,8 +1,5 @@
-"use client";
 
 import { ReactNode } from "react";
-import Header from "@/components/Header";
-import AdminDashboardHeader from "@/components/DashboardHeader";
 
 export default function AdminDashboardLayout({
   children,
@@ -11,15 +8,11 @@ export default function AdminDashboardLayout({
 }) {
   return (
     <div className="min-h-screen bg-background text-[var(--foreground)]">
-
-      {/* 🔥 Global Header */}
-      <AdminDashboardHeader />
-
-      {/* 🔥 Page Wrapper */}
-      <div className="pt-28 px-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="pt-28">
+        <div className="mx-auto max-w-7xl px-6">
           {children}
         </div>
+
       </div>
     </div>
   );
