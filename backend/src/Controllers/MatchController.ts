@@ -143,16 +143,24 @@ export const GetMyMatches = async (req: Request, res: Response) => {
 
   try {
 
-    const matches = await prisma.match.findMany({
-      where: {
-        creatorId: req.user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: limit,
-      skip: page * limit,
-    });
+    const [matches, total] = await Promise.all([
+      prisma.match.findMany({
+        where: {
+          creatorId: req.user.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip: page * limit,
+      }),
+
+      prisma.match.count({
+        where: {
+          creatorId: req.user.id,
+        },
+      }),
+    ]);
 
     await Promise.all(
       matches.map((match) =>
@@ -165,9 +173,17 @@ export const GetMyMatches = async (req: Request, res: Response) => {
       )
     );
 
+    const totalPages = Math.ceil(total / limit);
+
     return res.status(200).json({
       success: true,
       data: matches,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
     });
 
   } catch (error) {

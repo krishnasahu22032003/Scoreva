@@ -125,7 +125,7 @@ export default function UserDashboardHeader({ onCreateClick }: Props) {
 
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden text-[var(--foreground)]"
+            className="md:hidden cursor-pointer text-[var(--foreground)]"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -143,7 +143,7 @@ export default function UserDashboardHeader({ onCreateClick }: Props) {
               setOpen(false);
               handleLogout();
             }}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-sm hover:border-[var(--border-strong)] transition-all"
+            className="w-full cursor-pointer flex items-center justify-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-sm hover:border-[var(--border-strong)] transition-all"
           >
             <LogOut size={14} />
             Sign Out

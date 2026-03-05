@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ENV } from "./ENV";
 
 export type MatchStatus = "UPCOMING" | "LIVE" | "ENDED";
@@ -17,16 +17,40 @@ export interface AdminMatch {
   createdAt: string;
 }
 
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface GetMyMatchesResponse {
   success: boolean;
   data: AdminMatch[];
+  pagination: Pagination;
 }
 
-export async function getAdminMatches(): Promise<AdminMatch[]> {
+export interface GetAdminMatchesQuery {
+  page?: number;
+  limit?: number;
+}
+
+export interface GetAdminMatchesResult {
+  matches: AdminMatch[];
+  pagination: Pagination;
+}
+
+export async function getAdminMatches(
+  query: GetAdminMatchesQuery = {}
+): Promise<GetAdminMatchesResult> {
   try {
     const res = await axios.get<GetMyMatchesResponse>(
       ENV.ADMIN_GET_MATCH as string,
       {
+        params: {
+          page: query.page ?? 0,
+          limit: query.limit ?? 6,
+        },
         withCredentials: true,
       }
     );
@@ -35,9 +59,19 @@ export async function getAdminMatches(): Promise<AdminMatch[]> {
       throw new Error("Failed to fetch matches");
     }
 
-    return res.data.data;
+    return {
+      matches: res.data.data,
+      pagination: res.data.pagination,
+    };
   } catch (error) {
-    console.error("Error fetching admin matches:", error);
-    throw error;
+    const err = error as AxiosError<{ message?: string }>;
+
+    if (err.response) {
+      throw new Error(
+        err.response.data?.message || "Failed to fetch admin matches"
+      );
+    }
+
+    throw new Error("Network error while fetching admin matches");
   }
 }

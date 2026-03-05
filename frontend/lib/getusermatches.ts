@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ENV } from "./ENV";
 
 export interface Match {
@@ -18,19 +18,21 @@ interface GetMatchesResponse {
   data: Match[];
 }
 
-interface Query {
+export interface GetMatchesQuery {
   page?: number;
   limit?: number;
 }
 
-export async function GetMatches(query: Query = {}): Promise<Match[]> {
+export async function GetMatches(
+  query: GetMatchesQuery = {}
+): Promise<Match[]> {
   try {
     const response = await axios.get<GetMatchesResponse>(
       ENV.USER_MATCH as string,
       {
         params: {
           page: query.page ?? 0,
-          limit: query.limit ?? 50,
+          limit: query.limit ?? 6,
         },
         withCredentials: true,
       }
@@ -38,7 +40,14 @@ export async function GetMatches(query: Query = {}): Promise<Match[]> {
 
     return response.data.data;
   } catch (error) {
-    console.error("Failed to fetch matches:", error);
-    throw error;
+    const err = error as AxiosError<{ message?: string }>;
+
+    if (err.response) {
+      throw new Error(
+        err.response.data?.message || "Failed to fetch matches"
+      );
+    }
+
+    throw new Error("Network error while fetching matches");
   }
 }

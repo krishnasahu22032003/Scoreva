@@ -1,29 +1,25 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio } from "lucide-react";
-import { ENV } from "@/lib/ENV";
 import { GetCommentary } from "@/lib/getcommentary";
+import { useLiveCommentary } from "@/hooks/liveCommentary";
 
 interface Commentary {
   id: number;
   matchId: number;
-
   minute: number | null;
   sequence: number | null;
   period: string | null;
   eventType: string | null;
   actor: string | null;
   team: string | null;
-
   message: string;
-
   metadata: Record<string, unknown> | null;
   tags: string[];
-
   createdAt: string;
 }
 
@@ -34,16 +30,16 @@ export default function AdminMatchLivePage() {
   const [commentary, setCommentary] = useState<Commentary[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const socketRef = useRef<WebSocket | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // ---------------- FETCH HISTORY ----------------
+  useLiveCommentary(matchId ?? null, (data) => {
+    setCommentary((prev) => [...prev, data]);
+  });
 
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const data = await GetCommentary(matchId)
-
+        const data = await GetCommentary(matchId);
         setCommentary(data.reverse());
       } catch {
         toast.error("Failed to load commentary");
@@ -55,64 +51,13 @@ export default function AdminMatchLivePage() {
     if (matchId) fetchHistory();
   }, [matchId]);
 
-  // ---------------- AUTO SCROLL ----------------
-
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [commentary]);
 
-  // ---------------- WEBSOCKET ----------------
-
-  useEffect(() => {
-    if (!matchId) return;
-
-    const socket = new WebSocket(`${ENV.WS_URL}/ws`);
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      socket.send(
-        JSON.stringify({
-          type: "subscribe",
-          matchId,
-        })
-      );
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-
-        if (message.type === "commentary") {
-          setCommentary((prev) => [...prev, message.data]);
-        }
-      } catch {
-        console.error("Invalid WS message");
-      }
-    };
-
-    socket.onerror = () => {
-      toast.error("Live connection error");
-    };
-
-    return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(
-          JSON.stringify({
-            type: "unsubscribe",
-            matchId,
-          })
-        );
-      }
-      socket.close();
-    };
-  }, [matchId]);
-
-  // ---------------- UI ----------------
-
   return (
     <div className="px-4 sm:px-6 max-w-6xl mx-auto -mt-10 sm:-mt-14">
 
-      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 sm:mb-10">
 
         <div>
@@ -136,14 +81,12 @@ export default function AdminMatchLivePage() {
         </div>
       </div>
 
-      {/* LOADING */}
       {loading && (
         <div className="flex justify-center py-20">
           <div className="h-6 w-6 border-2 border-[var(--cyan)] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
-      {/* FEED CONTAINER */}
       <div className="glass rounded-2xl border border-[var(--border-subtle)] p-4 sm:p-6 max-h-[65vh] sm:max-h-[70vh] overflow-y-auto hide-scrollbar">
 
         <AnimatePresence initial={false}>
@@ -157,10 +100,8 @@ export default function AdminMatchLivePage() {
               className="relative mb-4 sm:mb-5 p-4 sm:p-5 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all"
             >
 
-              {/* Accent Line */}
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--crimson)] rounded-l-2xl" />
 
-              {/* HEADER ROW */}
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-[var(--secondary)]">
@@ -191,12 +132,10 @@ export default function AdminMatchLivePage() {
                 )}
               </div>
 
-              {/* MAIN MESSAGE */}
               <p className="text-xs sm:text-sm text-[var(--foreground)] leading-relaxed mb-3">
                 {item.message}
               </p>
 
-              {/* META INFO */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] text-[var(--muted)] mb-3">
 
                 {item.actor && (
@@ -217,10 +156,9 @@ export default function AdminMatchLivePage() {
 
               </div>
 
-              {/* TAGS */}
-              {item.tags && item.tags.length > 0 && (
+              {item.tags?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {item.tags.map((tag: string, index: number) => (
+                  {item.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="text-[9px] sm:text-[10px] px-2 py-1 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--secondary)]"
@@ -231,7 +169,6 @@ export default function AdminMatchLivePage() {
                 </div>
               )}
 
-              {/* METADATA */}
               {item.metadata && (
                 <details className="text-[10px] sm:text-[11px] text-[var(--muted)] cursor-pointer">
                   <summary className="hover:text-[var(--foreground)]">
@@ -242,6 +179,7 @@ export default function AdminMatchLivePage() {
                   </pre>
                 </details>
               )}
+
             </motion.div>
           ))}
         </AnimatePresence>

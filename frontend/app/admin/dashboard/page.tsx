@@ -34,7 +34,9 @@ const [commentaryTeam, setCommentaryTeam] = useState("");
 const [commentaryTags, setCommentaryTags] = useState("");
 const [commentaryMetadata, setCommentaryMetadata] = useState("");
 const [commentaryMessage, setCommentaryMessage] = useState("");
-
+const [page, setPage] = useState(0);
+const [pagination, setPagination] = useState({ totalPages: 0 });
+const limit = 6
   const [form, setForm] = useState({
     sport: "",
     firstTeam: "",
@@ -45,20 +47,22 @@ const [commentaryMessage, setCommentaryMessage] = useState("");
     endTime: "",
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getAdminMatches();
-        setMatches(data);
-      } catch {
-        toast.error("Failed to load matches");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+useEffect(() => {
+  async function fetchData() {
+    try {
+      const res = await getAdminMatches({ page, limit });
 
+      setMatches(res.matches);
+      setPagination(res.pagination);
+    } catch {
+      toast.error("Failed to load matches");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchData();
+}, [page]);
   // ---------------- CREATE MATCH ----------------
 
   const handleCreateMatch = async () => {
@@ -193,37 +197,38 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
 };
 
   return (
-    <>
-      <AdminDashboardHeader onCreateClick={() => setOpenModal(true)} />
+  <>
+    <AdminDashboardHeader onCreateClick={() => setOpenModal(true)} />
 
-      <div className="space-y-10">
-        <div className="flex items-center justify-between pt-4 md:pt-6">
-          <h1 className="text-3xl md:text-4xl font-[var(--font-heading)] font-semibold tracking-tight">
-            Your{" "}
-            <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
-              Matches
-            </span>
-          </h1>
+    <div className="space-y-10">
+      <div className="flex items-center justify-between pt-4 md:pt-6">
+        <h1 className="text-3xl md:text-4xl font-[var(--font-heading)] font-semibold tracking-tight">
+          Your{" "}
+          <span className="bg-gradient-to-r from-[var(--crimson)] via-[var(--violet)] to-[var(--cyan)] bg-clip-text text-transparent">
+            Matches
+          </span>
+        </h1>
+      </div>
+
+      {loading && (
+        <div className="flex justify-center py-20">
+          <div className="h-6 w-6 border-2 border-[var(--cyan)] border-t-transparent rounded-full animate-spin" />
         </div>
+      )}
 
-        {loading && (
-          <div className="flex justify-center py-20">
-            <div className="h-6 w-6 border-2 border-[var(--cyan)] border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
+      {!loading && matches.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-32 text-center">
+          <p className="text-[var(--text-muted)] text-sm">
+            No matches yet.
+          </p>
+          <p className="text-[var(--text-secondary)] text-xs mt-2">
+            Click “Create Match” to get started.
+          </p>
+        </div>
+      )}
 
-        {!loading && matches.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="text-[var(--text-muted)] text-sm">
-              No matches yet.
-            </p>
-            <p className="text-[var(--text-secondary)] text-xs mt-2">
-              Click “Create Match” to get started.
-            </p>
-          </div>
-        )}
-
-        {!loading && matches.length > 0 && (
+      {!loading && matches.length > 0 && (
+        <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {matches.map((match) => (
               <motion.div
@@ -247,32 +252,59 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
 
                 {match.status === "LIVE" && (
                   <div>
- <button
-                    onClick={() => {
-                      setSelectedMatchId(match.id);
-                      setCommentaryOpen(true);
-                    }}
-                    className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
-                  >
-                    <MessageSquareText size={14} />
-                    Add Commentary
-                  </button>
-                  <button
-  onClick={() => router.push(`/admin/dashboard/match/${match.id}`)}
-  className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
->
-  <Radio size={14} />
-  View Live Feed
-</button>
+                    <button
+                      onClick={() => {
+                        setSelectedMatchId(match.id);
+                        setCommentaryOpen(true);
+                      }}
+                      className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
+                    >
+                      <MessageSquareText size={14} />
+                      Add Commentary
+                    </button>
+
+                    <button
+                      onClick={() => router.push(`/admin/dashboard/match/${match.id}`)}
+                      className="mt-5 w-full cursor-pointer flex items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] py-2 text-xs hover:border-[var(--border-strong)] transition-all"
+                    >
+                      <Radio size={14} />
+                      View Live Feed
+                    </button>
                   </div>
-                 
-                  
                 )}
               </motion.div>
             ))}
           </div>
-        )}
-      </div>
+
+          {/* PAGINATION */}
+          <div className="flex justify-center pt-8">
+            <div className="glass flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border-subtle)]">
+
+              <button
+                disabled={page === 0}
+                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                className="px-4 py-1.5 text-xs font-medium rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--foreground)] transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <span className="text-xs text-[var(--text-muted)] px-2">
+                Page <span className="text-[var(--foreground)] font-medium">{page + 1}</span>
+              </span>
+
+              <button
+                disabled={matches.length < limit}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-4 py-1.5 text-xs font-medium rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--foreground)] transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+
+            </div>
+          </div>
+        </>
+      )}
+    </div>
 
       {/*COMMENTARY MODAL */}
 <AnimatePresence>

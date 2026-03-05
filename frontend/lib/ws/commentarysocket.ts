@@ -10,11 +10,17 @@ class CommentarySocket {
   private manualClose = false;
 
   connect(matchId: number, handler: CommentaryHandler) {
+    if (this.matchId === matchId && this.socket && this.socket.readyState === WebSocket.OPEN) {
+  return;
+}
     this.matchId = matchId;
     this.handler = handler;
     this.manualClose = false;
 
-    if (this.socket) {
+    if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
+      this.socket.onclose = null;
+      this.socket.onerror = null;
+      this.socket.onmessage = null;
       this.socket.close();
     }
 
@@ -22,6 +28,11 @@ class CommentarySocket {
     this.socket = socket;
 
     socket.onopen = () => {
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+
       socket.send(
         JSON.stringify({
           type: "subscribe",
@@ -64,14 +75,20 @@ class CommentarySocket {
         })
       );
     }
+if (this.socket.readyState === WebSocket.OPEN) {
+  this.socket.close();
+}{
+      this.socket.onclose = null;
+      this.socket.onerror = null;
+      this.socket.onmessage = null;
+      this.socket.close();
+    }
 
-    this.socket.close();
     this.socket = null;
   }
 
   private scheduleReconnect() {
     if (!this.matchId || !this.handler) return;
-
     if (this.reconnectTimer) return;
 
     this.reconnectTimer = setTimeout(() => {
