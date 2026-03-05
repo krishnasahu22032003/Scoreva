@@ -10,6 +10,8 @@ import { getAdminMatches, AdminMatch } from "@/lib/getAdminMatches";
 import { postCommentary } from "@/lib/commentary";
 import { ENV } from "@/lib/ENV";
 import AdminDashboardHeader from "@/components/DashboardHeader";
+import { Trash2 } from "lucide-react";
+import { DeleteMatch } from "@/lib/deletematch";
 
 export default function AdminDashboard() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
@@ -46,6 +48,12 @@ const limit = 6
     endDate: "",
     endTime: "",
   });
+ //Delete Match 
+
+const [deleteOpen, setDeleteOpen] = useState(false);
+const [deleteMatchId, setDeleteMatchId] = useState<number | null>(null);
+const [deleting, setDeleting] = useState(false);
+
 
 useEffect(() => {
   async function fetchData() {
@@ -63,6 +71,29 @@ useEffect(() => {
 
   fetchData();
 }, [page]);
+// Delete Handler
+
+const handleDeleteMatch = async () => {
+  if (!deleteMatchId) return;
+
+  try {
+    setDeleting(true);
+
+    await DeleteMatch(deleteMatchId);
+
+    setMatches((prev) => prev.filter((m) => m.id !== deleteMatchId));
+
+    toast.success("Match deleted");
+
+    setDeleteOpen(false);
+    setDeleteMatchId(null);
+  } catch (error: any) {
+    toast.error(error.message || "Failed to delete match");
+  } finally {
+    setDeleting(false);
+  }
+};
+
   // ---------------- CREATE MATCH ----------------
 
   const handleCreateMatch = async () => {
@@ -236,14 +267,25 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="glass p-6 hover:border-[var(--border-strong)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.6)] transition-all duration-300"
+                className="relative glass p-6 hover:border-[var(--border-strong)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.6)] transition-all duration-300"
               >
-                <div className="flex justify-between items-center">
-                  <h2 className="text-sm font-medium">
-                    {match.firstTeam} vs {match.secondTeam}
-                  </h2>
-                  <StatusBadge status={match.status} />
-                </div>
+    <div className="flex justify-between items-center pr-6">
+  <h2 className="text-sm font-medium">
+    {match.firstTeam} vs {match.secondTeam}
+  </h2>
+
+  <StatusBadge status={match.status} />
+</div>
+
+<button
+  onClick={() => {
+    setDeleteMatchId(match.id);
+    setDeleteOpen(true);
+  }}
+  className="absolute cursor-pointer top-4 right-4 text-[var(--text-muted)] hover:text-[var(--crimson)] transition"
+>
+  <Trash2 size={16} />
+</button>
 
                 <div className="flex items-center gap-2 mt-4 text-xs text-[var(--text-muted)]">
                   <CalendarDays size={14} />
@@ -305,7 +347,56 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
         </>
       )}
     </div>
+<AnimatePresence>
+  {deleteOpen && (
+    <motion.div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="glass w-full max-w-md p-8 relative"
+      >
+        <button
+          onClick={() => setDeleteOpen(false)}
+          className="absolute cursor-pointer right-4 top-4 text-[var(--text-muted)] hover:text-[var(--foreground)]"
+        >
+          <X size={18} />
+        </button>
 
+        <h2 className="text-lg font-semibold mb-4">
+          Delete Match
+        </h2>
+
+        <p className="text-sm text-[var(--text-secondary)] mb-6">
+          Are you sure you want to delete this match? This action cannot be undone.
+        </p>
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={() => setDeleteOpen(false)}
+            className="px-4 cursor-pointer py-2 text-xs rounded-lg border border-[var(--border-subtle)] bg-[var(--surface)] hover:border-[var(--border-strong)] transition"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={handleDeleteMatch}
+            disabled={deleting}
+            className="px-4 py-2 cursor-pointer text-xs rounded-lg bg-[var(--crimson)] text-white hover:opacity-90 transition shadow-[var(--glow-crimson)]"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
       {/*COMMENTARY MODAL */}
 <AnimatePresence>
   {commentaryOpen && (
