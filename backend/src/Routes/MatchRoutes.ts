@@ -1,5 +1,5 @@
 import express from "express";
-import { CreateMatch, GetMatchData, GetMyMatches } from "../Controllers/MatchController.js";
+import { CreateMatch, DeleteMatch, GetMatchData, GetMyMatches } from "../Controllers/MatchController.js";
 import { AuthMiddleware  } from "../Middlewares/AuthMiddleware.js";
 import { AdminMiddleware } from "../Middlewares/AdminMiddleware.js";
 
@@ -13,6 +13,6 @@ MatchRouter.get(
   AdminMiddleware,
   GetMyMatches
 );
-
+MatchRouter.delete("/delete/:id", AuthMiddleware, AdminMiddleware, DeleteMatch);
 
 export default MatchRouter; 
