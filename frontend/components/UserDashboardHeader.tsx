@@ -29,7 +29,7 @@ export default function UserDashboardHeader({ onCreateClick }: Props) {
 
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+ 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (

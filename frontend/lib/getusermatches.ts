@@ -3,9 +3,14 @@ import { ENV } from "./ENV";
 
 export interface Match {
   id: number;
-  homeTeam: string;
-  awayTeam: string;
-  status: string;
+  sport: string;
+  firstTeam: string;
+  secondTeam: string;
+  status: "UPCOMING" | "LIVE" | "ENDED";
+  startTime: string;
+  endTime: string;
+  firstTeamScore: number;
+  secondTeamScore: number;
   createdAt: string;
 }
 

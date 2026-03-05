@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio } from "lucide-react";
 import { ENV } from "@/lib/ENV";
+import { GetCommentary } from "@/lib/getcommentary";
 
 interface Commentary {
   id: number;
@@ -42,12 +42,9 @@ export default function AdminMatchLivePage() {
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const res = await axios.get(
-          `${ENV.GET_COMMENTARY}/${matchId}`,
-          { withCredentials: true }
-        );
+        const data = await GetCommentary(matchId)
 
-        setCommentary(res.data.data.reverse());
+        setCommentary(data.reverse());
       } catch {
         toast.error("Failed to load commentary");
       } finally {
