@@ -184,11 +184,11 @@ export function attachWebSocketServer(server: Server) {
         broadcast(wss, { type: 'match_created', data: match })
 
     }
-  function broadcastCommentary(matchId:number, comment:string) {
+  function broadcastCommentary(matchId:number, commentary:any) {
        broadcastToMatch(matchId, {
   type: "commentary_created",
   matchId,
-  data: comment
+  data: commentary
 });
     }
 

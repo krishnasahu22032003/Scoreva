@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays, Radio, Activity } from "lucide-react";
 import toast from "react-hot-toast";
 import UserDashboardHeader from "@/components/UserDashboardHeader";
 import { GetMatches, Match } from "@/lib/getusermatches";
 import { GetUserDetails } from "@/lib/getuserdetails";
-import { ENV } from "@/lib/ENV";
 import { GetCommentary } from "@/lib/getcommentary";
+import { useLiveCommentary } from "@/hooks/liveCommentary";
 
 interface Commentary {
   id: number;
@@ -26,44 +26,10 @@ export default function UserDashboard() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [commentary, setCommentary] = useState<Commentary[]>([]);
   const [commentaryLoading, setCommentaryLoading] = useState(false);
-  const socketRef = useRef<WebSocket | null>(null)
 
-useEffect(() => {
-
-  if(!selectedMatch || selectedMatch.status !== "LIVE") return
-
-  const socket = new WebSocket(`${ENV.WS_URL}/ws`)
-  socketRef.current = socket
-
-  socket.onopen = () => {
-    socket.send(JSON.stringify({
-      type:"subscribe",
-      matchId:selectedMatch.id
-    }))
-  }
-
-  socket.onmessage = (event) => {
-
-    const message = JSON.parse(event.data)
-
-    if(message.type === "commentary_created"){
-        setCommentary(prev => [...prev, message.data])
-    }
-
-  }
-
-  return () => {
-    if(socket.readyState === WebSocket.OPEN){
-      socket.send(JSON.stringify({
-        type:"unsubscribe",
-        matchId:selectedMatch.id
-      }))
-    }
-
-    socket.close()
-  }
-
-},[selectedMatch])
+  useLiveCommentary(selectedMatch?.id ?? null, (data) => {
+    setCommentary((prev) => [...prev, data]);
+  });
 
   useEffect(() => {
     async function load() {
@@ -85,76 +51,24 @@ useEffect(() => {
     load();
   }, []);
 
-  useEffect(() => {
-    if (!selectedMatch || selectedMatch.status !== "LIVE") return;
+  const handleSelectMatch = async (match: Match) => {
+    setSelectedMatch(match);
+    setCommentary([]);
 
-    let socket: WebSocket;
+    if (match.status !== "LIVE") return;
 
-    async function loadCommentary() {
-      try {
-        setCommentaryLoading(true);
+    try {
+      setCommentaryLoading(true);
 
-        const res = await fetch(
-          `${ENV.GET_COMMENTARY}/${selectedMatch?.id}`,
-          { credentials: "include" }
-        );
-
-        const data = await res.json();
-        setCommentary(data.data.reverse());
-      } catch {
-        toast.error("Failed to load commentary");
-      } finally {
-        setCommentaryLoading(false);
-      }
+      const data = await GetCommentary(match.id);
+      setCommentary([...data].reverse());
+    } catch {
+      toast.error("Failed to load commentary");
+    } finally {
+      setCommentaryLoading(false);
     }
+  };
 
-    loadCommentary();
-
-    socket = new WebSocket(`${ENV.WS_URL}/ws`);
-
-    socket.onopen = () => {
-      socket.send(
-        JSON.stringify({
-          type: "subscribe",
-          matchId: selectedMatch.id,
-        })
-      );
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === "commentary") {
-          setCommentary((prev) => [...prev, message.data]);
-        }
-      } catch {}
-    };
-
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(
-          JSON.stringify({
-            type: "unsubscribe",
-            matchId: selectedMatch.id,
-          })
-        );
-      }
-      socket?.close();
-    };
-  }, [selectedMatch]);
-  
-
- const handleSelectMatch = async (match: Match) => {
-  setSelectedMatch(match)
-  setCommentary([])
-
-  try {
-    const data = await GetCommentary(match.id)
-    setCommentary([...data].reverse())
-  } catch {
-    toast.error("Failed to load commentary")
-  }
-}
   return (
     <>
       <UserDashboardHeader onCreateClick={() => {}} />
@@ -199,9 +113,7 @@ useEffect(() => {
                     key={match.id}
                     whileHover={{ y: -4 }}
                     transition={{ duration: 0.25 }}
-                    onClick={() =>
-                      match.status === "LIVE" && setSelectedMatch(match)
-                    }
+                    onClick={() => handleSelectMatch(match)}
                     className={`glass p-6 cursor-pointer border transition-all ${
                       selectedMatch?.id === match.id
                         ? "border-[var(--cyan)] shadow-[var(--glow-cyan)]"

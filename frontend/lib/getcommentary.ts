@@ -28,9 +28,11 @@ export async function GetCommentary(
     const response = await axios.get<GetCommentaryResponse>(
       `${ENV.GET_COMMENTARY}/${matchId}`,
       {
+        
         params: {
           limit,
         },
+        withCredentials:true
       }
     );
 
