@@ -11,14 +11,19 @@ import { GetCommentary } from "@/lib/getcommentary";
 import { useLiveCommentary } from "@/hooks/liveCommentary";
 
 interface Commentary {
-  id: number;
-  matchId: number;
-  minute: number | null;
-  message: string;
-  eventType: string | null;
-  createdAt: string;
+  id: number
+  matchId: number
+  minute: number | null
+  sequence: number | null
+  period: string | null
+  eventType: string | null
+  actor: string | null
+  team: string | null
+  message: string
+  metadata: Record<string, unknown> | null
+  tags: string[]
+  createdAt: string
 }
-
 export default function UserDashboard() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,29 +214,75 @@ useEffect(() => {
             {selectedMatch &&
               selectedMatch.status === "LIVE" &&
               commentary.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="mb-4 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-subtle)]"
-                >
-                  <div className="flex justify-between text-xs text-[var(--secondary)] mb-1">
-                    <span>
-                      {item.minute !== null && `${item.minute}'`}
-                    </span>
+               <motion.div
+  key={item.id}
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0 }}
+  className="relative mb-4 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition-all"
+>
 
-                    {item.eventType && (
-                      <span className="text-[var(--cyan)]">
-                        {item.eventType}
-                      </span>
-                    )}
-                  </div>
+  {/* Accent line */}
+  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--crimson)] rounded-l-xl" />
 
-                  <p className="text-sm text-[var(--foreground)] leading-relaxed">
-                    {item.message}
-                  </p>
-                </motion.div>
+  <div className="flex items-center justify-between text-xs text-[var(--secondary)] mb-2">
+
+    <div className="flex items-center gap-2">
+
+      {item.minute !== null && (
+        <span className="px-2 py-0.5 rounded-md bg-[var(--live)]/10 text-[var(--live)] font-medium">
+          {item.minute}'
+        </span>
+      )}
+
+      {item.eventType && (
+        <span className="px-2 py-0.5 rounded-md bg-[var(--cyan)]/15 text-[var(--cyan)]">
+          {item.eventType}
+        </span>
+      )}
+
+    </div>
+
+    <span className="text-[var(--muted)] text-[10px]">
+      {new Date(item.createdAt).toLocaleTimeString()}
+    </span>
+
+  </div>
+
+  <p className="text-sm text-[var(--foreground)] leading-relaxed mb-2">
+    {item.message}
+  </p>
+
+  <div className="flex items-center gap-3 text-[10px] text-[var(--muted)]">
+
+    {item.actor && (
+      <span>
+        <span className="text-[var(--secondary)]">Player:</span> {item.actor}
+      </span>
+    )}
+
+    {item.team && (
+      <span>
+        <span className="text-[var(--secondary)]">Team:</span> {item.team}
+      </span>
+    )}
+
+  </div>
+
+  {item.tags && item.tags.length > 0 && (
+    <div className="flex flex-wrap gap-1 mt-2">
+      {item.tags.map((tag, i) => (
+        <span
+          key={i}
+          className="text-[9px] px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--secondary)]"
+        >
+          #{tag}
+        </span>
+      ))}
+    </div>
+  )}
+
+</motion.div>
               ))}
           </AnimatePresence>
         </div>
