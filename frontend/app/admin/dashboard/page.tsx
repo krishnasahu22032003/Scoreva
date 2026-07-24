@@ -319,7 +319,7 @@ if (!selectedMatch || selectedMatch.status !== "LIVE") {
           </div>
 
           {/* PAGINATION */}
-          <div className="flex justify-center pt-8">
+          <div className="flex justify-center items-center bottom-0 pt-8">
             <div className="glass flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border-subtle)]">
 
               <button

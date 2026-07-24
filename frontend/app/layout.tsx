@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Orbitron, Inter, Space_Mono } from "next/font/google";
+// @ts-ignore
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
